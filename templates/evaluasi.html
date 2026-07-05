@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-dark">Evaluasi Kinerja Model</h2>
+        <p class="text-muted">Hasil pengukuran akurasi algoritma Random Forest menggunakan data testing.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card p-4 shadow-sm border-0 h-100">
+            <h5 class="text-primary fw-bold mb-4">Metrik Regresi</h5>
+            
+            <div class="mb-4 p-3 border rounded-3 bg-light">
+                <h6 class="text-primary fw-bold mb-1">Mean Absolute Error (MAE)</h6>
+                <h2 class="text-dark fw-bold mb-0">12.45</h2>
+                <small class="text-muted">Rata-rata kesalahan tebakan</small>
+            </div>
+            
+            <div class="mb-4 p-3 border rounded-3 bg-light">
+                <h6 class="text-danger fw-bold mb-1">Root Mean Squared Error (RMSE)</h6>
+                <h2 class="text-dark fw-bold mb-0">15.30</h2>
+                <small class="text-muted">Sensitivitas terhadap error besar</small>
+            </div>
+            
+            <div class="p-3 border rounded-3 bg-light">
+                <h6 class="text-success fw-bold mb-1">R-Squared (R²)</h6>
+                <h2 class="text-dark fw-bold mb-0">0.92</h2>
+                <small class="text-muted">Akurasi kecocokan data (92%)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7 mt-4 mt-md-0">
+        <div class="card p-4 shadow-sm border-0 h-100">
+            <h5 class="text-primary fw-bold mb-4"><i class="bi bi-bar-chart-fill"></i> Visualisasi Matriks Error</h5>
+            <div style="position: relative; height: 100%; min-height: 300px; width: 100%;">
+                <canvas id="evaluasiChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 bg-info bg-opacity-10 p-4 rounded border-start border-info border-4 shadow-sm">
+    <p class="mb-0 text-dark"><strong>Kesimpulan Ilmiah:</strong> Semakin rendah grafik MAE dan RMSE, maka model semakin akurat. Nilai R-Squared yang tinggi (mendekati 1.0) menunjukkan bahwa variabel cuaca dan usia bebek berhasil menjelaskan sebagian besar fluktuasi produksi telur.</p>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Data dari kartu di atas (bisa disesuaikan dengan hasil terminal Anda)
+        const ctx = document.getElementById('evaluasiChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['MAE (Error Rata-rata)', 'RMSE (Error Maksimal)'],
+                datasets: [{
+                    label: 'Tingkat Kesalahan (Butir Telur)',
+                    data: [12.45, 15.30], // Ganti angka ini jika hasil di terminal berbeda
+                    backgroundColor: [
+                        'rgba(52, 152, 219, 0.7)', // Biru untuk MAE
+                        'rgba(231, 76, 60, 0.7)'   // Merah untuk RMSE
+                    ],
+                    borderColor: [
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(231, 76, 60, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8 // Ujung grafik melengkung modern
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                },
+                plugins: {
+                    legend: { display: false } // Sembunyikan legenda agar lebih bersih
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

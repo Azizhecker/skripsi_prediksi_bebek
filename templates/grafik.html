@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold text-dark">Monitoring Produksi</h2>
+        <p class="text-muted mb-0">Visualisasi data historis dan perbandingan dengan hasil prediksi model.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <select class="form-select form-select-lg shadow-sm border-primary" id="timeFilter" onchange="updateCharts()">
+            <option value="30" selected>30 Hari Terakhir</option>
+            <option value="60">60 Hari Terakhir</option>
+            <option value="365">1 Tahun Terakhir</option>
+        </select>
+    </div>
+</div>
+
+<script id="chart-labels" type="application/json">{{ labels | tojson | safe }}</script>
+<script id="chart-aktual" type="application/json">{{ data_aktual | tojson | safe }}</script>
+<script id="chart-prediksi" type="application/json">{{ data_prediksi | tojson | safe }}</script>
+
+{% if labels | length > 0 %}
+    <div class="card p-4 shadow-sm border-0 mb-5">
+        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clock-history"></i> Grafik Historis Produksi Telur</h5>
+        <div style="position: relative; height: 50vh; width: 100%;">
+            <canvas id="historisChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card p-4 shadow-sm border-0 mb-4 border-start border-success border-4">
+        <h5 class="fw-bold text-success mb-3"><i class="bi bi-cpu"></i> Kinerja Prediksi Model vs Aktual</h5>
+        <p class="small text-muted mb-3">Grafik ini menunjukkan seberapa akurat tebakan model (garis merah) dibandingkan kenyataan di lapangan (garis biru).</p>
+        <div style="position: relative; height: 50vh; width: 100%;">
+            <canvas id="prediksiChart"></canvas>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-warning text-center">Data CSV tidak ditemukan atau kosong.</div>
+{% endif %}
+
+<script>
+    let historisChartObj = null;
+    let prediksiChartObj = null;
+
+    // Membaca data lengkap dari Python
+    const fullLabels = JSON.parse(document.getElementById('chart-labels').textContent);
+    const fullAktual = JSON.parse(document.getElementById('chart-aktual').textContent);
+    const fullPrediksi = JSON.parse(document.getElementById('chart-prediksi').textContent);
+
+    function updateCharts() {
+        const days = parseInt(document.getElementById('timeFilter').value);
+        
+        // Memotong data sesuai filter (mengambil N hari terakhir)
+        const slicedLabels = fullLabels.slice(-days);
+        const slicedAktual = fullAktual.slice(-days);
+        const slicedPrediksi = fullPrediksi.slice(-days);
+
+        // --- Render Grafik Historis (Hanya Data Asli) ---
+        const ctxHist = document.getElementById('historisChart').getContext('2d');
+        if(historisChartObj) historisChartObj.destroy(); // Hapus grafik lama sebelum update
+        
+        historisChartObj = new Chart(ctxHist, {
+            type: 'line',
+            data: {
+                labels: slicedLabels,
+                datasets: [{
+                    label: 'Produksi Aktual (Butir)',
+                    data: slicedAktual,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // --- Render Grafik Prediksi (Komparasi) ---
+        const ctxPred = document.getElementById('prediksiChart').getContext('2d');
+        if(prediksiChartObj) prediksiChartObj.destroy();
+
+        prediksiChartObj = new Chart(ctxPred, {
+            type: 'line',
+            data: {
+                labels: slicedLabels,
+                datasets: [
+                    {
+                        label: 'Kenyataan Aktual',
+                        data: slicedAktual,
+                        borderColor: '#3498db', // Biru
+                        borderDash: [5, 5], // Garis putus-putus
+                        borderWidth: 2,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Tebakan Sistem (Random Forest)',
+                        data: slicedPrediksi,
+                        borderColor: '#e74c3c', // Merah
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    // Jalankan fungsi saat halaman pertama kali dimuat
+    document.addEventListener("DOMContentLoaded", updateCharts);
+</script>
+{% endblock %}

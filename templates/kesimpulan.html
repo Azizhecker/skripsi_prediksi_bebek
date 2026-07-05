@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-dark">Kesimpulan Penelitian</h2>
+        <p class="text-muted">Rangkuman akhir dari hasil implementasi dan pengujian skripsi.</p>
+    </div>
+</div>
+
+<div class="card p-4 shadow-sm border-0">
+    <ol class="text-dark" style="line-height: 1.8;">
+        <li class="mb-3">
+            <strong>Implementasi Berhasil:</strong> Sistem prediksi jumlah produksi telur bebek berbasis web berhasil dirancang dan dibangun dengan mengintegrasikan data faktor cuaca (BMKG) dan usia bebek, membantu optimalisasi manajemen produksi.
+        </li>
+        <li class="mb-3">
+            <strong>Keandalan Algoritma:</strong> Algoritma Random Forest terbukti mampu mengolah variabel cuaca dan usia biologis dengan tingkat akurasi yang tinggi (berdasarkan metrik evaluasi regresi R-squared).
+        </li>
+        <li class="mb-3">
+            <strong>Sistem Pendukung Keputusan (DSS):</strong> Aplikasi web ini berhasil berfungsi secara praktis sebagai alat bantu (DSS) yang proaktif bagi peternak untuk merencanakan strategi penyesuaian pakan, jadwal afkir bebek, serta manajemen distribusi telur secara optimal berbasis data.
+        </li>
+    </ol>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold text-dark">Form Prediksi Produksi Harian</h2>
+        <p class="text-muted">Masukkan data lingkungan dan biologis ternak untuk memperkirakan hasil panen.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-5 mb-4">
+        <div class="card p-4 h-100">
+            <h5 class="mb-4 text-primary fw-bold"><i class="bi bi-input-cursor-text"></i> Parameter Input</h5>
+            <form action="/predict" method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Suhu Udara (°C)</label>
+                    <input type="number" step="0.1" class="form-control" name="suhu" required value="{{ suhu if suhu else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Kelembapan (%)</label>
+                    <input type="number" step="0.1" class="form-control" name="kelembapan" required value="{{ kelembapan if kelembapan else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Curah Hujan (mm)</label>
+                    <input type="number" step="0.1" class="form-control" name="curah_hujan" required value="{{ curah_hujan if curah_hujan else '' }}">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Usia Bebek (Bulan)</label>
+                    <input type="number" step="0.1" class="form-control" name="usia_bebek" required value="{{ usia_bebek if usia_bebek else '' }}">
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Proses Analisis Data</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-7 mb-4">
+        {% if error %}
+        <div class="alert alert-danger" role="alert"><i class="bi bi-x-circle"></i> {{ error }}</div>
+        {% endif %}
+
+        {% if hasil_prediksi is none %}
+        <div class="card bg-white p-4 h-100 d-flex align-items-center justify-content-center text-muted border-dashed">
+            <div class="text-center">
+                <i class="bi bi-clipboard-data display-3"></i>
+                <p class="mt-3">Hasil prediksi akan muncul di sini setelah Anda mengisi form di samping.</p>
+            </div>
+        </div>
+        {% else %}
+        
+        <div class="card bg-primary text-white p-4 text-center shadow-sm mb-4">
+            <h5 class="fw-bold opacity-75">Estimasi Panen Telur</h5>
+            <h1 class="display-3 fw-bold my-2">{{ hasil_prediksi }} <span class="fs-4">Butir</span></h1>
+            <p class="mb-0">Hasil perhitungan algoritma Random Forest.</p>
+        </div>
+
+        <div class="card p-4 shadow-sm border-0 border-start border-4 
+            {% if hasil_prediksi == 0 %} border-secondary
+            {% elif hasil_prediksi <= 50 %} border-danger
+            {% elif hasil_prediksi <= 150 %} border-warning
+            {% else %} border-success {% endif %}">
+            
+            <h5 class="text-dark fw-bold mb-3"><i class="bi bi-lightbulb-fill text-warning"></i> Insight & Keputusan Peternak</h5>
+            <p class="text-muted small mb-3">Sistem mendeteksi pola produksi berikut. Berikut adalah rekomendasi tindakan operasional harian:</p>
+            
+            {% if hasil_prediksi == 0 %}
+                <div class="alert alert-secondary">
+                    <h6 class="fw-bold text-dark mb-1"><i class="bi bi-pause-circle"></i> Fase Istirahat / Molting</h6>
+                    <ul class="text-dark small ps-3 mb-0">
+                        <li><strong>Keputusan Pakan:</strong> Berikan pakan pemeliharaan standar (basal), kurangi protein tinggi agar menghemat biaya harian.</li>
+                        <li><strong>Tindakan:</strong> Fokus pada sanitasi kandang dan manajemen kesehatan selagi kawanan tidak berproduksi.</li>
+                    </ul>
+                </div>
+            
+            {% elif hasil_prediksi <= 50 %}
+                <div class="alert alert-danger">
+                    <h6 class="fw-bold text-danger mb-1"><i class="bi bi-exclamation-triangle"></i> Potensi Penurunan Tajam (Low Yield)</h6>
+                    <ul class="text-dark small ps-3 mb-0">
+                        <li><strong>Peringatan Cuaca/Usia:</strong> Angka sangat rendah. Segera periksa apakah curah hujan tinggi membasahi kandang atau suhu memicu stres panas.</li>
+                        <li><strong>Tindakan:</strong> Tambahkan suplemen anti-stres (seperti vitamin C) pada air minum, serta pastikan pencahayaan kandang cukup.</li>
+                    </ul>
+                </div>
+
+            {% elif hasil_prediksi <= 150 %}
+                <div class="alert alert-warning">
+                    <h6 class="fw-bold text-warning mb-1" style="color: #d39e00 !important;"><i class="bi bi-check-circle"></i> Produksi Normal - Stabil</h6>
+                    <ul class="text-dark small ps-3 mb-0">
+                        <li><strong>Keputusan Pakan:</strong> Pertahankan komposisi pakan (layer feed) dan pastikan ketersediaan air minum bersih tidak terputus.</li>
+                        <li><strong>Manajemen:</strong> Angka ini ideal untuk rotasi distribusi rutin ke pengepul lokal tanpa kendala kekurangan stok.</li>
+                    </ul>
+                </div>
+
+            {% else %}
+                <div class="alert alert-success">
+                    <h6 class="fw-bold text-success mb-1"><i class="bi bi-graph-up-arrow"></i> Puncak Produksi (High Yield)</h6>
+                    <ul class="text-dark small ps-3 mb-0">
+                        <li><strong>Keputusan Nutrisi:</strong> Tingkatkan asupan <em>kalsium</em> (grit/tepung tulang) untuk mencegah penipisan cangkang akibat tingginya intensitas bertelur.</li>
+                        <li><strong>Manajemen Distribusi:</strong> Bersiap untuk masa panen besar. Hubungi distributor utama karena pasokan telur melimpah.</li>
+                    </ul>
+                </div>
+            {% endif %}
+
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
