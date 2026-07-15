@@ -20,29 +20,37 @@ def index():
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None:
-        return render_template('index.html', error="Model belum dilatih. Jalankan train_model.py terlebih dahulu.")
+        return render_template('index.html', error="Model belum dilatih.")
 
     try:
+        # Menangkap input lama
         suhu = float(request.form['suhu'])
         kelembapan = float(request.form['kelembapan'])
         curah_hujan = float(request.form['curah_hujan'])
         usia_bebek = float(request.form['usia_bebek'])
-
-        input_data = np.array([[suhu, kelembapan, curah_hujan, usia_bebek]])
+        
+        # Menangkap input baru
+        jenis_bebek_teks = request.form['jenis_bebek']
+        populasi_ekor = int(request.form['populasi_ekor'])
+        pakan_kg = float(request.form['pakan_kg'])
+        
+        # Mapping jenis bebek (HARUS SAMA DENGAN TRAIN_MODEL.PY)
+        jenis_bebek_num = 0 if jenis_bebek_teks == 'Bebek Air' else 1
+        
+        # Urutan input HARUS SAMA PERSIS dengan saat train_model.py
+        input_data = np.array([[suhu, kelembapan, curah_hujan, usia_bebek, jenis_bebek_num, populasi_ekor, pakan_kg]])
 
         prediksi = model.predict(input_data)
         hasil = int(round(prediksi[0]))
         
-        # Mencegah hasil prediksi minus
-        if hasil < 0:
-            hasil = 0
+        if hasil < 0: hasil = 0
 
         return render_template('index.html', 
                                hasil_prediksi=hasil, 
-                               suhu=suhu, 
-                               kelembapan=kelembapan, 
-                               curah_hujan=curah_hujan, 
-                               usia_bebek=usia_bebek) 
+                               suhu=suhu, kelembapan=kelembapan, 
+                               curah_hujan=curah_hujan, usia_bebek=usia_bebek,
+                               jenis_bebek=jenis_bebek_teks, 
+                               populasi_ekor=populasi_ekor, pakan_kg=pakan_kg) 
 
     except Exception as e:
         return render_template('index.html', error=f"Terjadi kesalahan teknis: {str(e)}")
@@ -65,23 +73,29 @@ def grafik():
     data_aktual = []
     data_prediksi = []
     
+    # --- TAMBAHKAN BARIS INI (Pendefinisian variabel yang hilang) ---
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    # Menggunakan nama file CSV terakhir yang Anda unggah
-    file_dataset = os.path.join(BASE_DIR, 'datapeternakbebak.csv') 
+    file_dataset = os.path.join(BASE_DIR, 'dataset_bebek_realistis.csv') 
+    # ----------------------------------------------------------------
     
     try:
         if os.path.exists(file_dataset):
             df = pd.read_csv(file_dataset)
             
-            # Ambil semua data (maksimal 365 hari terakhir agar browser tidak berat)
-            df_terbaru = df.tail(365)
+            # Ambil 365 data terakhir
+            df_terbaru = df.tail(365).copy() # Gunakan .copy() agar tidak kena peringatan SettingWithCopy
+            
             labels = df_terbaru['tanggal'].tolist()
             data_aktual = df_terbaru['produksi_telur'].tolist()
             
-            # Jika model sudah dilatih, buat prediksinya untuk grafik kedua
             if model is not None:
-                X_grafik = df_terbaru[['suhu', 'kelembapan', 'curah_hujan', 'usia_bebek']]
-                prediksi = model.predict(X_grafik)
+                # Encoding jenis bebek
+                df_terbaru['jenis_bebek_num'] = df_terbaru['jenis_bebek'].map({'Bebek Air': 0, 'Bebek Lati': 1})
+                
+                # Gunakan 7 fitur yang sama dengan train_model.py
+                fitur_grafik = df_terbaru[['suhu', 'kelembapan', 'curah_hujan', 'usia_bebek', 'jenis_bebek_num', 'populasi_ekor', 'pakan_kg']]
+                
+                prediksi = model.predict(fitur_grafik)
                 data_prediksi = [int(round(p)) for p in prediksi]
                 
     except Exception as e:
