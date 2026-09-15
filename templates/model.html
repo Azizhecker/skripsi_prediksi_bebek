@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Informasi Model | DuckPredict{% endblock %}
+
+{% block content %}
+
+<style>
+
+.model-page {
+    max-width: 1000px;
+}
+
+.model-status {
+    padding: 14px;
+    border-radius: 7px;
+    margin-bottom: 18px;
+    font-size: 11px;
+}
+
+.status-ok {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.status-error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.parameter-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.parameter-table th,
+.parameter-table td {
+    padding: 11px;
+    border-bottom: 1px solid #edf2f7;
+    text-align: left;
+    font-size: 11px;
+}
+
+.parameter-table th {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.parameter-table td {
+    color: #172033;
+}
+
+.feature-box {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.feature {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 11px;
+}
+
+@media(max-width:700px) {
+
+    .feature-box {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+
+
+<div class="page-header">
+
+    <div class="page-label">
+        INFORMASI MODEL
+    </div>
+
+    <h1>
+        Model Random Forest
+    </h1>
+
+    <p>
+        Informasi konfigurasi dan parameter model yang digunakan sistem.
+    </p>
+
+</div>
+
+
+<div class="model-page">
+
+
+    {% if model_loaded %}
+
+    <div class="model-status status-ok">
+        Model Random Forest berhasil dimuat dan siap digunakan.
+    </div>
+
+    {% else %}
+
+    <div class="model-status status-error">
+        Model Random Forest belum berhasil dimuat.
+    </div>
+
+    {% endif %}
+
+
+    <div class="card" style="margin-bottom:18px;">
+
+        <div class="card-title">
+            Konfigurasi Model
+        </div>
+
+        <table class="parameter-table">
+
+            <tr>
+                <th>Algoritma</th>
+                <td>Random Forest Regression</td>
+            </tr>
+
+            <tr>
+                <th>Data Training</th>
+                <td>80%</td>
+            </tr>
+
+            <tr>
+                <th>Data Testing</th>
+                <td>20%</td>
+            </tr>
+
+            <tr>
+                <th>Cross Validation</th>
+                <td>5-Fold</td>
+            </tr>
+
+            <tr>
+                <th>Scoring</th>
+                <td>Negative Mean Squared Error</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+
+    <div class="card" style="margin-bottom:18px;">
+
+        <div class="card-title">
+            Parameter Terbaik
+        </div>
+
+
+        {% if best_params %}
+
+        <table class="parameter-table">
+
+            {% for key, value in best_params.items() %}
+
+            <tr>
+
+                <th>
+                    {{ key }}
+                </th>
+
+                <td>
+                    {{ value }}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+        {% else %}
+
+        <div style="font-size:11px;color:#64748b;">
+            Parameter terbaik belum tersedia.
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="card-title">
+            Variabel Model
+        </div>
+
+
+        <div class="feature-box">
+
+            <div class="feature">
+                Populasi Ratu
+            </div>
+
+            <div class="feature">
+                Populasi Air
+            </div>
+
+            <div class="feature">
+                Populasi Total
+            </div>
+
+            <div class="feature">
+                Kepadatan Kandang
+            </div>
+
+            <div class="feature">
+                Pakan
+            </div>
+
+            <div class="feature">
+                Kondisi Cuaca
+            </div>
+
+            <div class="feature">
+                Suhu
+            </div>
+
+            <div class="feature">
+                Kelembapan
+            </div>
+
+            <div class="feature">
+                Curah Hujan
+            </div>
+
+            <div class="feature">
+                Usia Ratu
+            </div>
+
+            <div class="feature">
+                Usia Air
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

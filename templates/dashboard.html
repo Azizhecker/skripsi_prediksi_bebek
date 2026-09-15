@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | DuckPredict{% endblock %}
+
+{% block content %}
+
+<style>
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.stat {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 19px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-size: 25px;
+    font-weight: 700;
+    color: #172033;
+}
+
+.stat-unit {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-top: 5px;
+}
+
+.dashboard-columns {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.metric {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    padding: 15px;
+}
+
+.metric-name {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.metric-value {
+    margin-top: 7px;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.model-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.model-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 11px 0;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 11px;
+}
+
+.model-item:last-child {
+    border-bottom: none;
+}
+
+.model-key {
+    color: #64748b;
+}
+
+.model-value {
+    font-weight: 700;
+    color: #172033;
+}
+
+.quick-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.quick {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 17px;
+    color: #172033;
+    background: white;
+    transition: .2s;
+}
+
+.quick:hover {
+    border-color: #2563eb;
+    transform: translateY(-2px);
+}
+
+.quick-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.quick-text {
+    font-size: 10px;
+    line-height: 1.6;
+    color: #64748b;
+}
+
+@media(max-width:1050px) {
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-columns {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(max-width:650px) {
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+
+
+<div class="page-header">
+
+    <div class="page-label">
+        DASHBOARD
+    </div>
+
+    <h1>
+        Ringkasan Sistem
+    </h1>
+
+    <p>
+        Informasi data, performa model, dan akses utama sistem prediksi produksi telur bebek.
+    </p>
+
+</div>
+
+
+<div class="dashboard-grid">
+
+    <div class="stat">
+
+        <div class="stat-label">
+            JUMLAH DATA
+        </div>
+
+        <div class="stat-value">
+            {{ jumlah_data|default(0)|int }}
+        </div>
+
+        <div class="stat-unit">
+            data pengamatan
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div class="stat-label">
+            RATA-RATA PRODUKSI
+        </div>
+
+        <div class="stat-value">
+            {{ rata_rata_produksi|default(0)|round(0)|int }}
+        </div>
+
+        <div class="stat-unit">
+            butir telur
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div class="stat-label">
+            PRODUKSI MINIMUM
+        </div>
+
+        <div class="stat-value">
+            {{ produksi_minimum|default(0)|round(0)|int }}
+        </div>
+
+        <div class="stat-unit">
+            butir telur
+        </div>
+
+    </div>
+
+
+    <div class="stat">
+
+        <div class="stat-label">
+            PRODUKSI MAKSIMUM
+        </div>
+
+        <div class="stat-value">
+            {{ produksi_maksimum|default(0)|round(0)|int }}
+        </div>
+
+        <div class="stat-unit">
+            butir telur
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="dashboard-columns">
+
+
+    <div class="card">
+
+        <div class="card-title">
+            Performa Model
+        </div>
+
+        <div class="metrics">
+
+            <div class="metric">
+
+                <div class="metric-name">
+                    MAE
+                </div>
+
+                <div class="metric-value">
+                    {{ mae|default(0)|round(2) }}
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-name">
+                    RMSE
+                </div>
+
+                <div class="metric-value">
+                    {{ rmse|default(0)|round(2) }}
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-name">
+                    MAPE
+                </div>
+
+                <div class="metric-value">
+                    {{ mape|default(0)|round(2) }}%
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-name">
+                    R²
+                </div>
+
+                <div class="metric-value">
+                    {{ r2|default(0)|round(4) }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="card-title">
+            Informasi Model
+        </div>
+
+        <div class="model-list">
+
+            <div class="model-item">
+                <span class="model-key">Algoritma</span>
+                <span class="model-value">Random Forest</span>
+            </div>
+
+            <div class="model-item">
+                <span class="model-key">Jenis</span>
+                <span class="model-value">Regression</span>
+            </div>
+
+            <div class="model-item">
+                <span class="model-key">Training</span>
+                <span class="model-value">80%</span>
+            </div>
+
+            <div class="model-item">
+                <span class="model-key">Testing</span>
+                <span class="model-value">20%</span>
+            </div>
+
+            <div class="model-item">
+                <span class="model-key">Target</span>
+                <span class="model-value">Produksi Telur</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="card">
+
+    <div class="card-title">
+        Akses Sistem
+    </div>
+
+    <div class="quick-grid">
+
+
+        <a
+            href="{{ url_for('prediksi') }}"
+            class="quick"
+        >
+
+            <div class="quick-title">
+                Prediksi Produksi
+            </div>
+
+            <div class="quick-text">
+                Melakukan prediksi jumlah produksi telur berdasarkan faktor cuaca, populasi, pakan dan usia bebek.
+            </div>
+
+        </a>
+
+
+        <a
+            href="{{ url_for('grafik') }}"
+            class="quick"
+        >
+
+            <div class="quick-title">
+                Grafik Aktual & Prediksi
+            </div>
+
+            <div class="quick-text">
+                Membandingkan hasil produksi aktual dengan hasil prediksi Random Forest.
+            </div>
+
+        </a>
+
+
+        <a
+            href="{{ url_for('feature_importance') }}"
+            class="quick"
+        >
+
+            <div class="quick-title">
+                Feature Importance
+            </div>
+
+            <div class="quick-text">
+                Melihat tingkat kontribusi setiap variabel terhadap hasil prediksi model.
+            </div>
+
+        </a>
+
+
+    </div>
+
+</div>
+
+{% endblock %}

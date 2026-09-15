@@ -1,114 +1,835 @@
 {% extends "base.html" %}
 
+{% block title %}Grafik - DuckPredict{% endblock %}
+
 {% block content %}
-<div class="row mb-4 align-items-center">
-    <div class="col-md-8">
-        <h2 class="fw-bold text-dark">Monitoring Produksi</h2>
-        <p class="text-muted mb-0">Visualisasi data historis dan perbandingan dengan hasil prediksi model.</p>
+
+<div class="page-container">
+
+    <div class="page-header">
+        <div>
+            <div class="page-eyebrow">MODEL PERFORMANCE</div>
+            <h1>Grafik Aktual vs Prediksi</h1>
+            <p>
+                Perbandingan produksi telur aktual dengan hasil prediksi
+                Random Forest pada data pengujian.
+            </p>
+        </div>
+
+        <div class="status-badge">
+            <span></span>
+            Model Aktif
+        </div>
     </div>
-    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-        <select class="form-select form-select-lg shadow-sm border-primary" id="timeFilter" onchange="updateCharts()">
-            <option value="30" selected>30 Hari Terakhir</option>
-            <option value="60">60 Hari Terakhir</option>
-            <option value="365">1 Tahun Terakhir</option>
-        </select>
+
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+            <div class="summary-label">JUMLAH DATA</div>
+            <div class="summary-value">
+                {{ labels|length }}
+            </div>
+            <div class="summary-text">
+                data pengamatan
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">DATA AKTUAL</div>
+            <div class="summary-value">
+                {{ data_aktual|length }}
+            </div>
+            <div class="summary-text">
+                produksi telur
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-label">DATA PREDIKSI</div>
+            <div class="summary-value">
+                {{ data_prediksi|length }}
+            </div>
+            <div class="summary-text">
+                hasil Random Forest
+            </div>
+        </div>
+
     </div>
+
+
+    <div class="chart-card">
+
+        <div class="card-header">
+
+            <div>
+                <div class="card-eyebrow">
+                    PERBANDINGAN PRODUKSI
+                </div>
+
+                <h2>Produksi Aktual dan Prediksi</h2>
+
+                <p>
+                    Garis biru menunjukkan data aktual.
+                    Garis oranye menunjukkan hasil prediksi model.
+                </p>
+            </div>
+
+            <div class="legend">
+
+                <div>
+                    <span class="legend-blue"></span>
+                    Aktual
+                </div>
+
+                <div>
+                    <span class="legend-orange"></span>
+                    Prediksi
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="chart-container">
+
+            <canvas id="productionChart"></canvas>
+
+        </div>
+
+    </div>
+
+
+    <div class="info-grid">
+
+        <div class="info-card">
+
+            <div class="info-symbol">✓</div>
+
+            <div>
+
+                <h3>Interpretasi Grafik</h3>
+
+                <p>
+                    Semakin dekat garis prediksi terhadap garis aktual,
+                    semakin baik kemampuan model Random Forest dalam
+                    memperkirakan produksi telur bebek.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="info-card">
+
+            <div class="info-symbol">i</div>
+
+            <div>
+
+                <h3>Informasi Data</h3>
+
+                <p>
+                    Data yang ditampilkan berasal dari dataset pengujian
+                    yang digunakan untuk mengevaluasi kemampuan model.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
-<script id="chart-labels" type="application/json">{{ labels | tojson | safe }}</script>
-<script id="chart-aktual" type="application/json">{{ data_aktual | tojson | safe }}</script>
-<script id="chart-prediksi" type="application/json">{{ data_prediksi | tojson | safe }}</script>
 
-{% if labels | length > 0 %}
-    <div class="card p-4 shadow-sm border-0 mb-5">
-        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clock-history"></i> Grafik Historis Produksi Telur</h5>
-        <div style="position: relative; height: 50vh; width: 100%;">
-            <canvas id="historisChart"></canvas>
-        </div>
-    </div>
+<script id="graph-data" type="application/json">
+{
+    "labels": {{ labels|default([], true)|tojson }},
+    "actual": {{ data_aktual|default([], true)|tojson }},
+    "prediction": {{ data_prediksi|default([], true)|tojson }}
+}
+</script>
 
-    <div class="card p-4 shadow-sm border-0 mb-4 border-start border-success border-4">
-        <h5 class="fw-bold text-success mb-3"><i class="bi bi-cpu"></i> Kinerja Prediksi Model vs Aktual</h5>
-        <p class="small text-muted mb-3">Grafik ini menunjukkan seberapa akurat tebakan model (garis merah) dibandingkan kenyataan di lapangan (garis biru).</p>
-        <div style="position: relative; height: 50vh; width: 100%;">
-            <canvas id="prediksiChart"></canvas>
-        </div>
-    </div>
-{% else %}
-    <div class="alert alert-warning text-center">Data CSV tidak ditemukan atau kosong.</div>
-{% endif %}
 
 <script>
-    let historisChartObj = null;
-    let prediksiChartObj = null;
+document.addEventListener("DOMContentLoaded", function () {
 
-    // Membaca data lengkap dari Python
-    const fullLabels = JSON.parse(document.getElementById('chart-labels').textContent);
-    const fullAktual = JSON.parse(document.getElementById('chart-aktual').textContent);
-    const fullPrediksi = JSON.parse(document.getElementById('chart-prediksi').textContent);
+    const element = document.getElementById("graph-data");
 
-    function updateCharts() {
-        const days = parseInt(document.getElementById('timeFilter').value);
-        
-        // Memotong data sesuai filter (mengambil N hari terakhir)
-        const slicedLabels = fullLabels.slice(-days);
-        const slicedAktual = fullAktual.slice(-days);
-        const slicedPrediksi = fullPrediksi.slice(-days);
-
-        // --- Render Grafik Historis (Hanya Data Asli) ---
-        const ctxHist = document.getElementById('historisChart').getContext('2d');
-        if(historisChartObj) historisChartObj.destroy(); // Hapus grafik lama sebelum update
-        
-        historisChartObj = new Chart(ctxHist, {
-            type: 'line',
-            data: {
-                labels: slicedLabels,
-                datasets: [{
-                    label: 'Produksi Aktual (Butir)',
-                    data: slicedAktual,
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.3
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        // --- Render Grafik Prediksi (Komparasi) ---
-        const ctxPred = document.getElementById('prediksiChart').getContext('2d');
-        if(prediksiChartObj) prediksiChartObj.destroy();
-
-        prediksiChartObj = new Chart(ctxPred, {
-            type: 'line',
-            data: {
-                labels: slicedLabels,
-                datasets: [
-                    {
-                        label: 'Kenyataan Aktual',
-                        data: slicedAktual,
-                        borderColor: '#3498db', // Biru
-                        borderDash: [5, 5], // Garis putus-putus
-                        borderWidth: 2,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'Tebakan Sistem (Random Forest)',
-                        data: slicedPrediksi,
-                        borderColor: '#e74c3c', // Merah
-                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.3
-                    }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
+    if (!element) {
+        return;
     }
 
-    // Jalankan fungsi saat halaman pertama kali dimuat
-    document.addEventListener("DOMContentLoaded", updateCharts);
+    let graph;
+
+    try {
+        graph = JSON.parse(element.textContent);
+    } catch (error) {
+        console.error(error);
+        return;
+    }
+
+    const labels = graph.labels || [];
+    const actual = graph.actual || [];
+    const prediction = graph.prediction || [];
+
+    const canvas = document.getElementById(
+        "productionChart"
+    );
+
+    if (!canvas) {
+        return;
+    }
+
+    const ctx = canvas.getContext("2d");
+
+    function drawChart() {
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+        const width = rect.width;
+        const height = rect.height;
+
+        const ratio =
+            window.devicePixelRatio || 1;
+
+        canvas.width =
+            width * ratio;
+
+        canvas.height =
+            height * ratio;
+
+        ctx.setTransform(
+            ratio,
+            0,
+            0,
+            ratio,
+            0,
+            0
+        );
+
+        ctx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+        if (
+            actual.length === 0 ||
+            prediction.length === 0
+        ) {
+
+            ctx.fillStyle = "#64748b";
+
+            ctx.font =
+                "14px Arial";
+
+            ctx.textAlign =
+                "center";
+
+            ctx.fillText(
+                "Data grafik belum tersedia",
+                width / 2,
+                height / 2
+            );
+
+            return;
+        }
+
+
+        const padding = {
+            top: 30,
+            right: 30,
+            bottom: 60,
+            left: 75
+        };
+
+
+        const chartWidth =
+            width
+            - padding.left
+            - padding.right;
+
+
+        const chartHeight =
+            height
+            - padding.top
+            - padding.bottom;
+
+
+        const values =
+            actual.concat(
+                prediction
+            );
+
+
+        let min =
+            Math.min(...values);
+
+
+        let max =
+            Math.max(...values);
+
+
+        min =
+            Math.floor(
+                (min - 100) / 100
+            ) * 100;
+
+
+        max =
+            Math.ceil(
+                (max + 100) / 100
+            ) * 100;
+
+
+        if (max <= min) {
+            max = min + 1000;
+        }
+
+
+        function x(index) {
+
+            return (
+                padding.left
+                +
+                (
+                    index
+                    /
+                    Math.max(
+                        labels.length - 1,
+                        1
+                    )
+                )
+                *
+                chartWidth
+            );
+
+        }
+
+
+        function y(value) {
+
+            return (
+                padding.top
+                +
+                chartHeight
+                -
+                (
+                    (value - min)
+                    /
+                    (max - min)
+                )
+                *
+                chartHeight
+            );
+
+        }
+
+
+        // GRID
+
+        ctx.font =
+            "11px Arial";
+
+        ctx.textAlign =
+            "right";
+
+        for (
+            let i = 0;
+            i <= 5;
+            i++
+        ) {
+
+            const position =
+                padding.top
+                +
+                chartHeight
+                -
+                (
+                    i / 5
+                )
+                *
+                chartHeight;
+
+
+            const value =
+                min
+                +
+                (
+                    (max - min)
+                    *
+                    i
+                    /
+                    5
+                );
+
+
+            ctx.beginPath();
+
+            ctx.strokeStyle =
+                "#e2e8f0";
+
+            ctx.lineWidth = 1;
+
+            ctx.moveTo(
+                padding.left,
+                position
+            );
+
+            ctx.lineTo(
+                width - padding.right,
+                position
+            );
+
+            ctx.stroke();
+
+
+            ctx.fillStyle =
+                "#64748b";
+
+            ctx.fillText(
+                Math.round(value)
+                    .toLocaleString("id-ID"),
+                padding.left - 10,
+                position + 4
+            );
+
+        }
+
+
+        // LABEL TANGGAL
+
+        ctx.textAlign =
+            "center";
+
+        const step =
+            Math.max(
+                1,
+                Math.ceil(
+                    labels.length / 8
+                )
+            );
+
+
+        labels.forEach(
+            function(label, index) {
+
+                if (
+                    index % step !== 0
+                    &&
+                    index !==
+                        labels.length - 1
+                ) {
+                    return;
+                }
+
+
+                ctx.fillStyle =
+                    "#64748b";
+
+                ctx.fillText(
+                    label,
+                    x(index),
+                    height - 25
+                );
+
+            }
+        );
+
+
+        // GARIS
+
+        function drawLine(
+            values,
+            lineColor,
+            dashed
+        ) {
+
+            if (
+                values.length === 0
+            ) {
+                return;
+            }
+
+
+            ctx.beginPath();
+
+            ctx.lineWidth = 2.5;
+
+            ctx.strokeStyle =
+                lineColor;
+
+            ctx.setLineDash(
+                dashed
+                    ? [7, 5]
+                    : []
+            );
+
+
+            values.forEach(
+                function(value, index) {
+
+                    const px =
+                        x(index);
+
+                    const py =
+                        y(value);
+
+
+                    if (index === 0) {
+
+                        ctx.moveTo(
+                            px,
+                            py
+                        );
+
+                    } else {
+
+                        ctx.lineTo(
+                            px,
+                            py
+                        );
+
+                    }
+
+                }
+            );
+
+
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+
+        }
+
+
+        drawLine(
+            actual,
+            "#2563eb",
+            false
+        );
+
+
+        drawLine(
+            prediction,
+            "#f59e0b",
+            true
+        );
+
+
+        // TITIK AKTUAL
+
+        actual.forEach(
+            function(value, index) {
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x(index),
+                    y(value),
+                    2.5,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fillStyle =
+                    "#2563eb";
+
+                ctx.fill();
+
+            }
+        );
+
+
+        // TITIK PREDIKSI
+
+        prediction.forEach(
+            function(value, index) {
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x(index),
+                    y(value),
+                    2,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fillStyle =
+                    "#f59e0b";
+
+                ctx.fill();
+
+            }
+        );
+
+    }
+
+
+    drawChart();
+
+
+    window.addEventListener(
+        "resize",
+        drawChart
+    );
+
+});
 </script>
+
+
+<style>
+
+.page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.page-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.page-header h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.page-header p {
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 1px solid #dbeafe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.summary-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.summary-label {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.summary-value {
+    color: #0f172a;
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 8px;
+}
+
+.summary-text {
+    color: #94a3b8;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.chart-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.card-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #64748b;
+}
+
+.card-header h2 {
+    margin: 5px 0;
+    color: #0f172a;
+    font-size: 18px;
+}
+
+.card-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.legend {
+    display: flex;
+    gap: 18px;
+    color: #475569;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.legend div {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.legend-blue,
+.legend-orange {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-blue {
+    background: #2563eb;
+}
+
+.legend-orange {
+    background: #f59e0b;
+}
+
+.chart-container {
+    height: 500px;
+    padding: 25px;
+}
+
+#productionChart {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.info-card {
+    display: flex;
+    gap: 15px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.info-symbol {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.info-card h3 {
+    margin: 0 0 6px;
+    color: #0f172a;
+    font-size: 15px;
+}
+
+.info-card p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .page-container {
+        padding: 20px 15px;
+    }
+
+    .page-header {
+        flex-direction: column;
+    }
+
+    .page-header h1 {
+        font-size: 25px;
+    }
+
+    .chart-container {
+        height: 350px;
+        padding: 12px;
+    }
+
+}
+
+</style>
+
 {% endblock %}

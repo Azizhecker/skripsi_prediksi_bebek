@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Masuk | DuckPredict
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+</head>
+
+<body class="login-page">
+
+<div class="login-background">
+
+    <div class="floating-duck duck-one">
+        🦆
+    </div>
+
+    <div class="floating-duck duck-two">
+        🦆
+    </div>
+
+    <div class="floating-duck duck-three">
+        🦆
+    </div>
+
+
+    <div class="login-wrapper">
+
+        <div class="login-intro">
+
+            <div class="login-logo">
+                🦆
+            </div>
+
+            <div class="login-brand">
+                DuckPredict
+            </div>
+
+            <h1>
+                Prediksi Produksi<br>
+                Telur Bebek
+            </h1>
+
+            <p>
+                Sistem informasi prediksi produksi telur
+                menggunakan algoritma Random Forest.
+            </p>
+
+            <div class="login-feature">
+
+                <span>✓</span>
+                Prediksi berbasis data
+
+            </div>
+
+            <div class="login-feature">
+
+                <span>✓</span>
+                Analisis performa model
+
+            </div>
+
+            <div class="login-feature">
+
+                <span>✓</span>
+                Dashboard informasi
+
+            </div>
+
+        </div>
+
+
+        <div class="login-card">
+
+            <div class="login-card-header">
+
+                <span>
+                    SELAMAT DATANG
+                </span>
+
+                <h2>
+                    Masuk ke Sistem
+                </h2>
+
+                <p>
+                    Silakan masukkan akun Anda.
+                </p>
+
+            </div>
+
+
+            {% with messages = get_flashed_messages(
+                with_categories=true
+            ) %}
+
+                {% if messages %}
+
+                    {% for category, message in messages %}
+
+                        <div class="alert {{ category }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <form
+                method="POST"
+                class="login-form"
+            >
+
+                <label>
+                    Username
+                </label>
+
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Masukkan username"
+                    required
+                    autocomplete="username"
+                >
+
+
+                <label>
+                    Password
+                </label>
+
+                <div class="password-wrapper">
+
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        placeholder="Masukkan password"
+                        required
+                        autocomplete="current-password"
+                    >
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        onclick="togglePassword()"
+                    >
+                        ◉
+                    </button>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="login-button"
+                >
+                    Masuk ke Sistem
+                    <span>→</span>
+                </button>
+
+            </form>
+
+
+            <div class="login-footer">
+
+                <span>
+                    DuckPredict
+                </span>
+
+                <span>
+                    Random Forest
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script
+    src="{{ url_for('static', filename='js/app.js') }}"
+></script>
+
+</body>
+
+</html>

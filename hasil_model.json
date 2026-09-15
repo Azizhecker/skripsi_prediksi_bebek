@@ -1,0 +1,15 @@
+{
+    "jumlah_data": 508,
+    "data_training": 406,
+    "data_testing": 102,
+    "mae": 68.9876702229069,
+    "rmse": 87.53558998937321,
+    "mape": 4.933034870002015,
+    "r2": 0.9774036974838487,
+    "best_params": {
+        "model__max_depth": 10,
+        "model__min_samples_leaf": 1,
+        "model__min_samples_split": 5,
+        "model__n_estimators": 300
+    }
+}

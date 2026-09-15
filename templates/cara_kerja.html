@@ -1,27 +1,249 @@
 {% extends "base.html" %}
 
+{% block title %}Cara Kerja | DuckPredict{% endblock %}
+
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2 class="fw-bold text-dark">Cara Kerja Model</h2>
-        <p class="text-muted">Landasan teori sistem Machine Learning yang digunakan.</p>
+
+<style>
+
+.workflow {
+    max-width: 1000px;
+}
+
+.step {
+    display: grid;
+    grid-template-columns: 45px 1fr;
+    gap: 15px;
+    padding: 20px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.step:last-child {
+    border-bottom: none;
+}
+
+.step-number {
+    width: 38px;
+    height: 38px;
+    border-radius: 7px;
+    background: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.step-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: #172033;
+}
+
+.step-text {
+    font-size: 11px;
+    line-height: 1.7;
+    color: #64748b;
+}
+
+.feature-list {
+    margin-top: 10px;
+    padding-left: 17px;
+}
+
+.feature-list li {
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 5px;
+}
+
+</style>
+
+
+<div class="page-header">
+
+    <div class="page-label">
+        INFORMASI SISTEM
     </div>
+
+    <h1>
+        Cara Kerja Sistem
+    </h1>
+
+    <p>
+        Alur proses prediksi produksi telur bebek menggunakan Random Forest Regression.
+    </p>
+
 </div>
 
-<div class="card p-4 shadow-sm">
-    <div class="mb-4">
-        <h5 class="fw-bold text-primary">1. Pengumpulan Data</h5>
-        <p class="text-muted">Sistem ini dilatih menggunakan dataset historis yang terdiri dari variabel cuaca dari BMKG dan data biologis dari peternakan terkait periode 2023-2025.</p>
-    </div>
-    
-    <div class="mb-4">
-        <h5 class="fw-bold text-primary">2. Algoritma Random Forest</h5>
-        <p class="text-muted">Metode <em>ensemble learning</em> beroperasi dengan membangun banyak pohon keputusan (Decision Trees). Setiap pohon memberikan tebakan, lalu model menggabungkan hasil seluruh pohon untuk menghasilkan rata-rata yang lebih akurat dan stabil.</p>
+
+<div class="card workflow">
+
+
+    <div class="step">
+
+        <div class="step-number">
+            01
+        </div>
+
+        <div>
+
+            <div class="step-title">
+                Input Data
+            </div>
+
+            <div class="step-text">
+                Sistem menggunakan data produksi telur dan faktor yang memengaruhinya sebagai dasar pemodelan.
+            </div>
+
+            <ul class="feature-list">
+
+                <li>Populasi Bebek Ratu</li>
+                <li>Populasi Bebek Air</li>
+                <li>Populasi Total</li>
+                <li>Kepadatan Kandang</li>
+                <li>Pakan</li>
+                <li>Kondisi Cuaca</li>
+                <li>Suhu</li>
+                <li>Kelembapan</li>
+                <li>Curah Hujan</li>
+                <li>Usia Bebek</li>
+
+            </ul>
+
+        </div>
+
     </div>
 
-    <div>
-        <h5 class="fw-bold text-primary">3. Penerapan Keputusan</h5>
-        <p class="text-muted">Sistem ini mengolah input cuaca harian. Peternak menggunakannya untuk mencegah turunnya panen saat cuaca buruk melalui modifikasi kandang atau suplemen vitamin ternak.</p>
+
+    <div class="step">
+
+        <div class="step-number">
+            02
+        </div>
+
+        <div>
+
+            <div class="step-title">
+                Pembagian Data
+            </div>
+
+            <div class="step-text">
+                Dataset dibagi menjadi data training sebesar 80% dan data testing sebesar 20%.
+            </div>
+
+        </div>
+
     </div>
+
+
+    <div class="step">
+
+        <div class="step-number">
+            03
+        </div>
+
+        <div>
+
+            <div class="step-title">
+                Pelatihan Random Forest
+            </div>
+
+            <div class="step-text">
+                Model Random Forest Regression dilatih menggunakan data training untuk mempelajari hubungan antara variabel input dan produksi telur.
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="step">
+
+        <div class="step-number">
+            04
+        </div>
+
+        <div>
+
+            <div class="step-title">
+                Optimasi Parameter
+            </div>
+
+            <div class="step-text">
+                Parameter model ditentukan menggunakan GridSearchCV dengan cross-validation untuk mendapatkan kombinasi parameter yang sesuai.
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="step">
+
+        <div class="step-number">
+            05
+        </div>
+
+        <div>
+
+            <div class="step-title">
+                Pengujian Model
+            </div>
+
+            <div class="step-text">
+                Model yang telah dilatih diuji menggunakan data testing untuk mengetahui kemampuan model dalam melakukan prediksi.
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="step">
+
+        <div class="step-number">
+            06
+        </div>
+
+        <div>
+
+            <div class="step-title">
+                Evaluasi
+            </div>
+
+            <div class="step-text">
+                Performa model dievaluasi menggunakan MAE, RMSE, MAPE dan R².
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="step">
+
+        <div class="step-number">
+            07
+        </div>
+
+        <div>
+
+            <div class="step-title">
+                Prediksi Produksi
+            </div>
+
+            <div class="step-text">
+                Setelah model tersedia, pengguna dapat memasukkan kondisi peternakan untuk memperoleh estimasi jumlah produksi telur.
+            </div>
+
+        </div>
+
+    </div>
+
+
 </div>
+
 {% endblock %}

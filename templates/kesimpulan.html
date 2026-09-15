@@ -1,24 +1,182 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2 class="fw-bold text-dark">Kesimpulan Penelitian</h2>
-        <p class="text-muted">Rangkuman akhir dari hasil implementasi dan pengujian skripsi.</p>
+
+<style>
+.kes-page {
+    max-width: 1100px;
+    margin: auto;
+}
+
+.kes-header {
+    margin-bottom: 25px;
+}
+
+.kes-header h1 {
+    margin: 0;
+    font-size: 28px;
+    color: #172033;
+}
+
+.kes-header p {
+    color: #64748b;
+}
+
+.kes-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 18px rgba(15,23,42,.05);
+}
+
+.kes-card h2 {
+    color: #172033;
+    font-size: 19px;
+}
+
+.kes-card p {
+    color: #475569;
+    line-height: 1.8;
+    text-align: justify;
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.metric {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+}
+
+.metric-label {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.metric-value {
+    margin-top: 8px;
+    font-size: 25px;
+    font-weight: 800;
+    color: #1d4ed8;
+}
+
+@media(max-width:800px) {
+    .metric-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</style>
+
+<div class="kes-page">
+
+    <div class="kes-header">
+
+        <h1>Kesimpulan</h1>
+
+        <p>
+            Ringkasan hasil implementasi sistem prediksi
+            produksi telur bebek menggunakan Random Forest.
+        </p>
+
     </div>
+
+
+    <div class="kes-card">
+
+        <h2>Kesimpulan Sistem</h2>
+
+        <p>
+            Sistem ini menerapkan algoritma Random Forest
+            untuk melakukan prediksi jumlah produksi telur
+            bebek berdasarkan faktor populasi bebek,
+            kepadatan kandang, pakan, kondisi cuaca,
+            suhu, kelembapan, curah hujan, serta usia bebek.
+        </p>
+
+        <p>
+            Sistem menyediakan proses input parameter,
+            proses prediksi, visualisasi perbandingan
+            produksi aktual dan prediksi, feature importance,
+            serta evaluasi kinerja model.
+        </p>
+
+        <p>
+            Hasil prediksi dapat digunakan sebagai informasi
+            pendukung dalam melihat estimasi produksi telur
+            berdasarkan kondisi yang diberikan pada sistem.
+        </p>
+
+    </div>
+
+
+    <div class="kes-card">
+
+        <h2>Evaluasi Model</h2>
+
+        <div class="metric-grid">
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    MAE
+                </div>
+
+                <div class="metric-value">
+                    {{ metrics.get('MAE', 0)|round(2) }}
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    RMSE
+                </div>
+
+                <div class="metric-value">
+                    {{ metrics.get('RMSE', 0)|round(2) }}
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    MAPE
+                </div>
+
+                <div class="metric-value">
+                    {{ metrics.get('MAPE', 0)|round(2) }}%
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <div class="metric-label">
+                    R²
+                </div>
+
+                <div class="metric-value">
+                    {{ metrics.get('R2', 0)|round(4) }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
-<div class="card p-4 shadow-sm border-0">
-    <ol class="text-dark" style="line-height: 1.8;">
-        <li class="mb-3">
-            <strong>Implementasi Berhasil:</strong> Sistem prediksi jumlah produksi telur bebek berbasis web berhasil dirancang dan dibangun dengan mengintegrasikan data faktor cuaca (BMKG) dan usia bebek, membantu optimalisasi manajemen produksi.
-        </li>
-        <li class="mb-3">
-            <strong>Keandalan Algoritma:</strong> Algoritma Random Forest terbukti mampu mengolah variabel cuaca dan usia biologis dengan tingkat akurasi yang tinggi (berdasarkan metrik evaluasi regresi R-squared).
-        </li>
-        <li class="mb-3">
-            <strong>Sistem Pendukung Keputusan (DSS):</strong> Aplikasi web ini berhasil berfungsi secara praktis sebagai alat bantu (DSS) yang proaktif bagi peternak untuk merencanakan strategi penyesuaian pakan, jadwal afkir bebek, serta manajemen distribusi telur secara optimal berbasis data.
-        </li>
-    </ol>
-</div>
 {% endblock %}
