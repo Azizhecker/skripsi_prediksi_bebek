@@ -20,4 +20,8 @@ dist/
 .env
 .env.local
 .env.development.local
-.venv
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
